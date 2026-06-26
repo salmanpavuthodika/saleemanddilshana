@@ -1,0 +1,279 @@
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { collection, addDoc, onSnapshot, query, orderBy, limit } from "firebase/firestore";
+import { db, handleFirestoreError, OperationType } from "../lib/firebase";
+import { Wish } from "../types";
+
+const PASTEL_COLORS = [
+  "bg-[#FBF8F3] text-[#4A3B32] border-[#E8DEC9] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
+  "bg-[#FCEFEA] text-[#5C3E35] border-[#EAD0C7] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
+  "bg-[#EBF3FC] text-[#344E5C] border-[#CBDDF2] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
+  "bg-[#F3EEFC] text-[#4A345C] border-[#D6CBE8] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
+  "bg-[#EDF6F0] text-[#34523C] border-[#CDDFD2] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
+  "bg-[#FAF0E6] text-[#61452D] border-[#E6D4C3] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
+];
+
+const INITIAL_WISHES: Wish[] = [
+  {
+    id: "seed-1",
+    name: "Aisha & Farhan",
+    message: "May Allah (SWT) bless your union, shower His endless mercy upon you, and grant you a lifetime of love, laughter, and strong faith together! Baarakallahu lakuma.",
+    color: PASTEL_COLORS[0],
+    rotation: -2,
+    timestamp: Date.now() - 3600000 * 5,
+  },
+  {
+    id: "seed-2",
+    name: "Uncle Yaseen",
+    message: "Wishing Mohammed Saleem and Dhilshana Suman a wonderful journey ahead. May you be the coolness of each other's eyes. Sending all our love and du'as from Kerala!",
+    color: PASTEL_COLORS[1],
+    rotation: 1.5,
+    timestamp: Date.now() - 3600000 * 2,
+  },
+  {
+    id: "seed-3",
+    name: "Zahra Karim",
+    message: "So incredibly thrilled for you both! Can't wait to celebrate at the Emerald Palace in July. Truly a match made in heaven. Mubarak!",
+    color: PASTEL_COLORS[2],
+    rotation: -1,
+    timestamp: Date.now() - 1800000,
+  },
+];
+
+export default function WishesSection() {
+  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Load wishes on mount from Firestore
+  useEffect(() => {
+    const q = query(collection(db, "wishes"), orderBy("timestamp", "desc"), limit(50));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const items: Wish[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        items.push({
+          id: doc.id,
+          name: data.name || "",
+          message: data.message || "",
+          color: data.color || PASTEL_COLORS[0],
+          rotation: typeof data.rotation === "number" ? data.rotation : 0,
+          timestamp: typeof data.timestamp === "number" ? data.timestamp : Date.now(),
+        });
+      });
+      
+      if (items.length === 0) {
+        setWishes(INITIAL_WISHES);
+      } else {
+        setWishes(items);
+      }
+    }, (err) => {
+      console.error("Firestore loading error, falling back to local storage:", err);
+      const stored = localStorage.getItem("wedding_wishes");
+      if (stored) {
+        try {
+          setWishes(JSON.parse(stored));
+        } catch (e) {
+          setWishes(INITIAL_WISHES);
+        }
+      } else {
+        setWishes(INITIAL_WISHES);
+      }
+      handleFirestoreError(err, OperationType.GET, "wishes");
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!name.trim()) {
+      setError("Please write your name.");
+      return;
+    }
+    if (!message.trim()) {
+      setError("Please write a warm wish or message.");
+      return;
+    }
+    if (message.length > 250) {
+      setError("Please keep your message within 250 characters.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const colorIndex = Math.floor(Math.random() * PASTEL_COLORS.length);
+    const rotation = Math.random() * 6 - 3; // Random float between -3 and +3 degrees
+
+    const newWishData = {
+      name: name.trim(),
+      message: message.trim(),
+      color: PASTEL_COLORS[colorIndex],
+      rotation: Number(rotation.toFixed(1)),
+      timestamp: Date.now(),
+    };
+
+    addDoc(collection(db, "wishes"), newWishData)
+      .then(() => {
+        setName("");
+        setMessage("");
+        setIsSubmitting(false);
+      })
+      .catch((err) => {
+        console.error("Error adding wish to Firestore:", err);
+        // Fallback write to localStorage
+        const newWish: Wish = {
+          id: "wish-" + Date.now() + "-" + Math.floor(Math.random() * 1000),
+          ...newWishData
+        };
+        const updated = [newWish, ...wishes];
+        setWishes(updated);
+        localStorage.setItem("wedding_wishes", JSON.stringify(updated));
+        setName("");
+        setMessage("");
+        setIsSubmitting(false);
+        handleFirestoreError(err, OperationType.WRITE, "wishes");
+      });
+  };
+
+  return (
+    <div id="wishes-module" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      {/* Form Input Card */}
+      <div className="lg:col-span-5 bg-gradient-to-b from-[#FAF8F5] to-[#F5EFE6] border border-[#DCD0C0] rounded-2xl p-6 md:p-8 shadow-[0_15px_40px_rgba(163,117,109,0.05)] relative overflow-hidden">
+        {/* Subtle geometric corner highlights */}
+        <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none opacity-40 border-r border-t border-[#D6C5B3] rounded-tr-2xl" />
+        <div className="absolute bottom-0 left-0 w-16 h-16 pointer-events-none opacity-40 border-l border-b border-[#D6C5B3] rounded-bl-2xl" />
+
+        <div className="relative z-10 text-[#4A3B32]">
+          <h3 className="font-cinzel text-xl text-[#7E5E4E] font-bold tracking-wider mb-2 text-center lg:text-left">
+            Send Your Blessings
+          </h3>
+          <p className="font-sans text-xs text-[#8C7A6B] leading-relaxed mb-6 text-center lg:text-left">
+            Leave a message, prayers, or du'a for Saleem and Dhilshana. Your wishes will be pinned to our celebration board.
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="guest-name" className="block text-xs font-semibold uppercase tracking-wider text-[#8C7A6B] mb-1.5">
+                Your Name
+              </label>
+              <input
+                id="guest-name"
+                type="text"
+                placeholder="e.g. Sameer & Family"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={40}
+                className="w-full bg-[#FAF7F2] border border-[#DCD0C0] rounded-lg px-4 py-3 text-sm text-[#4A3B32] placeholder-[#A68F80]/50 focus:outline-none focus:border-[#C2A289] focus:ring-1 focus:ring-[#C2A289] transition-all duration-250"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="guest-message" className="block text-xs font-semibold uppercase tracking-wider text-[#8C7A6B] mb-1.5">
+                Your Wish
+              </label>
+              <textarea
+                id="guest-message"
+                rows={4}
+                placeholder="Write your prayers, warm wishes, or congratulations..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                maxLength={250}
+                className="w-full bg-[#FAF7F2] border border-[#DCD0C0] rounded-lg px-4 py-3 text-sm text-[#4A3B32] placeholder-[#A68F80]/50 focus:outline-none focus:border-[#C2A289] focus:ring-1 focus:ring-[#C2A289] transition-all duration-250 resize-none"
+              />
+              <div className="flex justify-end mt-1 text-[10px] text-[#A68F80]">
+                {message.length}/250 characters
+              </div>
+            </div>
+
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-rose-800 bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg"
+              >
+                {error}
+              </motion.p>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full relative overflow-hidden group py-3.5 bg-[#4A3B32] hover:bg-[#5C4B3E] text-white rounded-xl font-cinzel text-xs font-bold tracking-widest active:scale-[0.98] transition-all duration-150 shadow-md cursor-pointer disabled:opacity-55"
+            >
+              {isSubmitting ? "PINNING YOUR WISH..." : "SEND BLESSINGS & PIN"}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {/* Board Display of Pinned Notes */}
+      <div className="lg:col-span-7 h-[500px] bg-[#FAF8F5] rounded-2xl border border-[#DCD0C0] p-6 shadow-[0_15px_40px_rgba(163,117,109,0.05)] relative overflow-y-auto overflow-x-hidden">
+        {/* Board Background Linen Style */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#FAF8F5] via-[#F4EFEB] to-[#FAF8F5] opacity-95" />
+        <div className="absolute inset-0 islamic-pattern opacity-[0.03]" />
+        
+
+
+        {/* Board Pinned Items Grid */}
+        <div className="relative z-10 mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 p-2">
+          <AnimatePresence initial={false}>
+            {wishes.map((w) => (
+              <motion.div
+                key={w.id}
+                id={`wish-note-${w.id}`}
+                layout
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0, rotate: w.rotation }}
+                exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                whileHover={{ scale: 1.04, zIndex: 30, rotate: 0 }}
+                className={`relative p-5 rounded-md border shadow-md flex flex-col justify-between ${w.color} select-none transition-all duration-200 min-h-[170px]`}
+                style={{ transformOrigin: "center top" }}
+              >
+                {/* 3D Gold Pin at Top Center */}
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-gradient-to-r from-[#ECDBC9] via-[#C5A285] to-[#A37B5C] border border-white/40 shadow-sm flex items-center justify-center">
+                  {/* Pin head shine */}
+                  <div className="w-1 h-1 rounded-full bg-white opacity-80" />
+                  {/* Realistic shadow under the pin */}
+                  <div className="absolute -bottom-1 left-1.5 w-1 h-2 bg-black/10 blur-[0.5px] rounded-full transform -rotate-12" />
+                </div>
+
+                {/* Wish Content text */}
+                <div className="mt-2 text-xs font-serif leading-relaxed italic flex-grow">
+                  "{w.message}"
+                </div>
+
+                {/* Guest Author & Time details */}
+                <div className="mt-4 pt-2 border-t border-black/5 flex justify-between items-center text-[10px]">
+                  <span className="font-sans font-bold tracking-wide uppercase opacity-80 truncate max-w-[130px]">
+                    — {w.name}
+                  </span>
+                  <span className="font-mono opacity-40">
+                    {new Date(w.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Empty State */}
+        {wishes.length === 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center text-[#A68F80] opacity-60 z-10">
+            <svg className="w-12 h-12 mb-3 stroke-current opacity-30" viewBox="0 0 24 24" fill="none">
+              <path d="M12 19V5M5 12h14" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <p className="font-cinzel text-sm">No blessings pinned yet</p>
+            <p className="font-sans text-xs mt-1">Be the first to send your prayers!</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
