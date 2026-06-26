@@ -80,7 +80,7 @@ export default function EnvelopeEntrance({ onOpen }: EnvelopeEntranceProps) {
                 transition={{ duration: 0.2 }}
               >
                 <img 
-                  src="/wax_seal.png" 
+                  src="https://jumpshare.com/folder/iyVCcVNYLVMpPC5uTUgx" 
                   alt="Crimson Wax Seal" 
                   className="w-full h-full object-contain drop-shadow-[0_15px_30px_rgba(92,6,23,0.6)]"
                   referrerPolicy="no-referrer"
