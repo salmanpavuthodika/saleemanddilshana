@@ -5,19 +5,19 @@ import { X, ZoomIn, Heart } from "lucide-react";
 const GALLERY_IMAGES = [
   {
     id: "img-1",
-    url: "https://jumpshare.com/share/RlPDavSQnOzv9QNAzOdX",
+    url: "https://jumpshare.com/v/RlPDavSQnOzv9QNAzOdX+",
     alt: "Nikkah Signing Ceremony - Dhilshana & Saleem",
     caption: "The Nikkah Signing Ceremony"
   },
   {
     id: "img-2",
-    url: "https://jumpshare.com/share/DnWvdWqJfVrjXKn79wu6",
+    url: "https://jumpshare.com/v/DnWvdWqJfVrjXKn79wu6+",
     alt: "A Union Bound in Faith - Dhilshana & Saleem",
     caption: "A Union Bound in Faith"
   },
   {
     id: "img-3",
-    url: "https://jumpshare.com/share/BjkQuTIO7nO5kGbS02lf",
+    url: "https://jumpshare.com/v/BjkQuTIO7nO5kGbS02lf+",
     alt: "Celebrating Love & Blessings - Dhilshana & Saleem",
     caption: "The Sacred Nikkah Certificate"
   }
@@ -43,14 +43,14 @@ export default function GallerySection() {
               transition={{ duration: 0.6, delay: index * 0.15 }}
               className={`relative h-[480px] md:h-[550px] rounded-2xl overflow-hidden border border-[#DCD0C0]/40 shadow-[0_12px_30px_rgba(163,117,109,0.04)] group transition-all duration-500 bg-[#FAF8F5] ${translateClass}`}
             >
-              {/* Image element with Jumpshare direct link routed through local API proxy to bypass hotlinking protection */}
+              {/* Image element with Jumpshare direct link with no-referrer policy */}
               <img
-                src={`/api/proxy-image?url=${encodeURIComponent(img.url)}`}
+                src={img.url}
                 alt={img.alt}
                 referrerPolicy="no-referrer"
                 loading="lazy"
                 className="w-full h-full object-cover object-center filter brightness-[0.98] group-hover:brightness-100 group-hover:scale-[1.03] transition-all duration-700 ease-out cursor-pointer"
-                onClick={() => setSelectedImage(`/api/proxy-image?url=${encodeURIComponent(img.url)}`)}
+                onClick={() => setSelectedImage(img.url)}
                 onError={(e) => {
                   // Fallback to high-quality wedding illustration if Jumpshare fails or is blocked
                   const target = e.target as HTMLImageElement;
@@ -63,7 +63,7 @@ export default function GallerySection() {
               {/* Minimal Hover Overlay with Zoom Icon */}
               <div 
                 className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer pointer-events-none"
-                onClick={() => setSelectedImage(`/api/proxy-image?url=${encodeURIComponent(img.url)}`)}
+                onClick={() => setSelectedImage(img.url)}
               >
                 <div className="p-3.5 bg-white/90 rounded-full shadow-lg text-[#7E5E4E] transform scale-90 group-hover:scale-100 transition-transform duration-300">
                   <ZoomIn className="w-5 h-5" />
