@@ -14,6 +14,7 @@ import EnvelopeEntrance from "./components/EnvelopeEntrance";
 import ScratchCard from "./components/ScratchCard";
 import WishesSection from "./components/WishesSection";
 import GallerySection from "./components/GallerySection";
+import { StageDecor, PetalRain, ProphetDuaCard, SwayingLantern } from "./components/IslamicLoveDecor";
 
 export default function App() {
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
@@ -33,13 +34,15 @@ export default function App() {
   const heroOpacity = useTransform(heroScroll.scrollYProgress, [0, 0.8], [1, 0]);
 
   // 2. Invitation Message Sliding Out of Envelope Sleeve on Scroll
-  const messageScroll = useScroll({
+  const { scrollYProgress: envelopeScrollYProgress } = useScroll({
     target: messageSleeveRef,
-    offset: ["start end", "end start"]
+    offset: ["start 0.9", "end 0.55"],
   });
-  // Card slides upwards out of its pocket sleeve
-  const cardY = useTransform(messageScroll.scrollYProgress, [0.05, 0.55], [160, -60]);
-  const cardScale = useTransform(messageScroll.scrollYProgress, [0.05, 0.55], [0.93, 1.03]);
+
+  // flap opens up and back first
+  const flapRotate = useTransform(envelopeScrollYProgress, [0, 0.4], [0, -165]);
+  // then the letter rises up out of the envelope opening (in px, masked)
+  const letterY = useTransform(envelopeScrollYProgress, [0.18, 1], [400, -74]);
 
   // 3. Photo Parallax is handled dynamically within GallerySection
 
@@ -87,6 +90,8 @@ export default function App() {
         id="main-invitation-site" 
         className={`transition-all duration-1000 ${isEnvelopeOpened ? "opacity-100 blur-0 pointer-events-auto" : "opacity-0 blur-md pointer-events-none h-screen overflow-hidden"}`}
       >
+        {/* Falling Petals and Gold Hearts Ambiance */}
+        {isEnvelopeOpened && <PetalRain />}
         
         {/* Subtle global decorative gold frame on edges */}
         <div className="fixed inset-3 md:inset-6 border border-[#C2A289]/15 rounded-2xl pointer-events-none z-40" />
@@ -139,6 +144,9 @@ export default function App() {
           />
           <div className="absolute inset-0 islamic-pattern opacity-[0.06]" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#FAF7F2]/20 via-[#FAF7F2]/85 to-[#FAF7F2]" />
+
+          {/* Wedding Stage Backdrop Decoration */}
+          <StageDecor />
 
           {/* Golden Arch Accent Line */}
           <motion.div 
@@ -248,7 +256,7 @@ export default function App() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-6"
+            className="grid grid-cols-3 gap-3 sm:gap-6"
           >
             <ScratchCard label="Wedding Day" value="27" hint="Scratch Day" />
             <ScratchCard label="Wedding Month" value="JULY" hint="Scratch Month" />
@@ -321,92 +329,133 @@ export default function App() {
           </motion.div>
         </section>
 
+        {/* --- PROPHET'S WEDDING DUA CARD --- */}
+        <section className="px-6 relative z-10">
+          <ProphetDuaCard />
+        </section>
+
 
         {/* --- SECTION: ENVELOPE SCROLL REVEAL MESSAGE --- */}
         <section 
-          ref={messageSleeveRef}
           id="scroll-envelope-section"
-          className="relative py-24 px-4 bg-gradient-to-b from-[#FAF7F2] via-[#FAF8F5] to-[#FAF7F2] border-t border-b border-[#DCD0C0]/40 overflow-hidden flex flex-col items-center justify-center min-h-[640px]"
+          className="relative overflow-hidden bg-gradient-to-b from-[#FAF7F2] via-[#FAF8F5] to-[#FAF7F2] pt-14 pb-20 border-t border-b border-[#DCD0C0]/40"
         >
-          {/* Parallax background geometric details */}
-          <div className="absolute inset-0 islamic-pattern opacity-[0.04]" />
+          <div className="mx-auto max-w-3xl px-6 text-center select-none">
+            <p className="font-sans text-xs uppercase tracking-[0.4em] text-[#C2A289]">
+              A Note From The Couple
+            </p>
+            <h2 className="mt-3 font-cinzel text-3xl sm:text-4xl text-[#5C111C] font-semibold tracking-wide">
+              Our Invitation
+            </h2>
+            <span className="font-serif italic text-xs tracking-wider text-[#A68F80] block mt-1">Scroll to open the envelope</span>
+          </div>
 
-
-
-          {/* Physical Envelope sleeve layout */}
-          <div className="relative w-full max-w-lg h-[440px] flex justify-center items-end">
-            
-            {/* The Back Layer of the Envelope Pocket (Stays fixed) */}
-            <div className="absolute inset-x-4 top-16 bottom-0 rounded-t-3xl bg-[#3D0A11] border-t-2 border-l-2 border-r-2 border-[#8C6D4A]/50 shadow-inner z-0 overflow-hidden">
-              {/* Shiny Gold Lining inside the envelope */}
-              <div className="absolute inset-1 rounded-t-2xl bg-gradient-to-tr from-[#8A6D3B] via-[#F3E5AB] to-[#8A6D3B] opacity-15 mix-blend-color-dodge" />
-              <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-[#1E0306]/80 to-transparent" />
-            </div>
-
-            {/* The Scroll (This element translates UPWARD as the user scrolls) */}
-            <motion.div
-              id="sliding-scroll-card"
-              style={{ y: cardY, scale: cardScale }}
-              className="absolute inset-x-8 top-10 text-[#4A3B32] shadow-[0_20px_50px_rgba(40,15,20,0.15)] flex flex-col justify-center items-center text-center z-10 cursor-default select-none"
+          {/* tall track gives the letter scroll room to rise */}
+          <div ref={messageSleeveRef} className="relative mx-auto mt-4 h-[660px] w-full max-w-md px-4 sm:px-6">
+            {/* envelope pinned to the bottom of the track */}
+            <div
+              className="absolute bottom-0 left-1/2 h-[300px] w-full max-w-[310px] xs:max-w-[350px] sm:max-w-[400px] md:max-w-md -translate-x-1/2"
+              style={{ perspective: "1600px" }}
             >
-              {/* Scroll Parchment Body */}
-              <div className="w-full bg-gradient-to-b from-[#F6F0E5] via-[#FFFDF9] to-[#F6F0E5] border-l-4 border-r-4 border-[#C2A289] rounded-md px-6 py-8 sm:px-8 sm:py-10 relative overflow-hidden flex flex-col items-center">
-                {/* Parchment texture overlay */}
-                <div className="absolute inset-0 bg-[url('/paper_texture.png')] opacity-25 mix-blend-multiply pointer-events-none" />
-                {/* Subtle soft shadows inside the parchment edges to make it look curled */}
-                <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-black/[0.04] to-transparent pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-black/[0.04] to-transparent pointer-events-none" />
-                
-                {/* Top Scroll Dowel Rod */}
-                <div className="absolute -top-1.5 left-0 right-0 h-3 bg-gradient-to-r from-[#8C6D4A] via-[#E6D0AA] to-[#8C6D4A] rounded-full shadow-sm z-20">
-                  {/* Left Endcap */}
-                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-5 bg-gradient-to-b from-[#D4AF37] via-[#AA7C11] to-[#D4AF37] rounded-l-md border-r border-[#6B4E2D]" />
-                  {/* Right Endcap */}
-                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-5 bg-gradient-to-b from-[#D4AF37] via-[#AA7C11] to-[#D4AF37] rounded-r-md border-l border-[#6B4E2D]" />
+              {/* Back panel (Layer 1) */}
+              <div 
+                className="absolute inset-0 z-0 rounded-lg shadow-2xl ring-1 ring-[#C2A289]/30"
+                style={{
+                  background: "oklch(0.91 0.04 86)",
+                }}
+              />
+
+              {/* Flap (Layer 3 - opens upward/back, sits behind the letter) */}
+              <motion.div
+                aria-hidden
+                style={{ rotateX: flapRotate, transformStyle: "preserve-3d" }}
+                className="absolute left-0 top-0 z-10 w-full origin-top"
+              >
+                <div
+                  className="h-[160px] w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(170deg, oklch(0.92 0.04 86), oklch(0.85 0.05 84))",
+                    clipPath: "polygon(0 0, 100% 0, 50% 100%)",
+                    boxShadow: "0 4px 8px oklch(0.3 0.05 70 / 0.18)",
+                    backfaceVisibility: "visible",
+                  }}
+                >
+                  {/* Gold double line details inside outer flap face */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 5,3 L 95,3 L 50,92 Z" fill="none" stroke="#C2A289" strokeWidth="0.5" opacity="0.45" />
+                  </svg>
                 </div>
+              </motion.div>
 
-                {/* Bottom Scroll Dowel Rod */}
-                <div className="absolute -bottom-1.5 left-0 right-0 h-3 bg-gradient-to-r from-[#8C6D4A] via-[#E6D0AA] to-[#8C6D4A] rounded-full shadow-sm z-20">
-                  {/* Left Endcap */}
-                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-5 bg-gradient-to-b from-[#D4AF37] via-[#AA7C11] to-[#D4AF37] rounded-l-md border-r border-[#6B4E2D]" />
-                  {/* Right Endcap */}
-                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-5 bg-gradient-to-b from-[#D4AF37] via-[#AA7C11] to-[#D4AF37] rounded-r-md border-l border-[#6B4E2D]" />
-                </div>
+              {/* Invitation Letter inside Mask (Layer 2) */}
+              <div
+                className="absolute inset-x-0 -top-[320px] bottom-[88px] z-20 overflow-hidden"
+              >
+                <motion.div
+                  className="absolute bottom-0 left-1/2 w-[92%] max-w-sm -translate-x-1/2 rounded-md p-4 shadow-2xl ring-1 ring-[#C2A289]/30 sm:p-6"
+                  style={{
+                    y: letterY,
+                    background: "linear-gradient(to bottom, #FCFAF6, #FFFDF9, #FCFAF6)",
+                  }}
+                >
+                  {/* Parchment texture overlay */}
+                  <div className="absolute inset-0 bg-[url('/paper_texture.png')] opacity-25 mix-blend-multiply pointer-events-none rounded-md" />
 
-                {/* Elegant Inner Scroll Frame with gold corners */}
-                <div className="absolute inset-3 border border-[#E3DAC9] opacity-80 pointer-events-none rounded" />
-                <div className="absolute inset-4 border border-[#C2A289]/40 pointer-events-none rounded" />
+                  <div className="relative rounded-sm border border-[#C2A289]/40 px-3 py-4 text-center sm:px-5 sm:py-5">
+                    {/* Decorative Scroll Corners */}
+                    <div className="absolute top-2 left-2 w-2 h-2 border-t border-l border-[#C2A289]/50 pointer-events-none" />
+                    <div className="absolute top-2 right-2 w-2 h-2 border-t border-r border-[#C2A289]/50 pointer-events-none" />
+                    <div className="absolute bottom-2 left-2 w-2 h-2 border-b border-l border-[#C2A289]/50 pointer-events-none" />
+                    <div className="absolute bottom-2 right-2 w-2 h-2 border-b border-r border-[#C2A289]/50 pointer-events-none" />
 
-                {/* Decorative Scroll Corners */}
-                <div className="absolute top-4 left-4 w-3 h-3 border-t-2 border-l-2 border-[#C2A289]/60 pointer-events-none" />
-                <div className="absolute top-4 right-4 w-3 h-3 border-t-2 border-r-2 border-[#C2A289]/60 pointer-events-none" />
-                <div className="absolute bottom-4 left-4 w-3 h-3 border-b-2 border-l-2 border-[#C2A289]/60 pointer-events-none" />
-                <div className="absolute bottom-4 right-4 w-3 h-3 border-b-2 border-r-2 border-[#C2A289]/60 pointer-events-none" />
+                    <p className="font-serif italic text-xl text-[#b8861c] sm:text-2xl">Bismillah</p>
+                    <p className="mt-2 font-cinzel text-[9px] sm:text-[10px] tracking-wider uppercase text-[#A68F80]">
+                      In the Name of Allah
+                    </p>
+                    
+                    <p className="mt-3 font-serif text-xs leading-relaxed text-[#4A3B32] sm:text-sm">
+                      We warmly invite you to celebrate the wedding of
+                    </p>
+                    <p className="mt-2 font-serif text-sm sm:text-base font-semibold text-[#5C111C]">
+                      Mohammed Saleem <br />
+                      <span className="text-xs font-normal text-[#8C7A6B]">&amp;</span> <br />
+                      Dhilshana Suman
+                    </p>
+                    
+                    <span className="mx-auto mt-3 block h-px w-12 bg-[#C2A289]/30" />
+                    <p className="mt-2 font-serif italic text-xs text-[#5C111C]">
+                      Please join us in your prayers.
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
 
-                {/* Royal Golden Ornament top center */}
-                <div className="text-[#C2A289] mb-2.5 text-sm select-none">✦ ⚜ ✦</div>
-
-                <h3 className="font-cinzel text-[9px] font-bold tracking-widest text-[#A68F80] mb-3 uppercase select-none">
-                  In the Name of Allah, the Most Beneficent, the Most Merciful
-                </h3>
-
-                {/* Invitation message */}
-                <p className="font-serif italic text-[#4A3B32]/95 text-[11px] sm:text-[13px] md:text-[14px] leading-relaxed max-w-xs sm:max-w-sm mb-3">
-                  "With the blessings of Allah (SWT), we warmly invite you to join us as we celebrate the union of Mohammed Saleem and Dhilshana Suman. Your presence, prayers, and blessings will make this special occasion even more memorable. We look forward to celebrating this joyous day with you and your family."
-                </p>
-
-                {/* Heart icon separator */}
-                <div className="flex items-center gap-2 justify-center mt-2.5 select-none">
-                  <div className="w-8 h-[1px] bg-[#E3DAC9]" />
-                  <Heart className="w-3 h-3 fill-[#C2A289]/30 text-[#C2A289]" />
-                  <div className="w-8 h-[1px] bg-[#E3DAC9]" />
+              {/* Front pocket (Layer 4 - always in front, letter tucks behind it) */}
+              <div
+                aria-hidden
+                className="absolute bottom-0 left-0 z-30 h-[178px] w-full overflow-hidden rounded-b-lg pointer-events-none"
+              >
+                <div
+                  className="h-full w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, oklch(0.88 0.05 84), oklch(0.82 0.06 82))",
+                    clipPath: "polygon(0 34%, 50% 0, 100% 34%, 100% 100%, 0 100%)",
+                    boxShadow: "inset 0 2px 10px oklch(0.3 0.05 70 / 0.18)",
+                  }}
+                >
+                  {/* Decorative inner patterned lattice */}
+                  <div className="absolute inset-0 bg-[radial-gradient(#C2A289_1px,transparent_1px)] [background-size:12px_12px] opacity-[0.03]" />
+                  
+                  {/* Gold borders along pocket cut */}
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M 0,34 L 50,0 L 100,34" fill="none" stroke="#C2A289" strokeWidth="0.8" opacity="0.5" />
+                  </svg>
                 </div>
               </div>
-            </motion.div>
 
-            {/* The Front Layer of the Envelope Pocket (Stays on top of scroll, creating a slot look) */}
-            <div className="absolute inset-x-4 bottom-0 h-48 rounded-b-3xl rounded-t-md bg-gradient-to-b from-[#5C111C] to-[#2B0409] border-t-2 border-l border-r border-b border-[#8C6D4A]/30 z-20 shadow-2xl overflow-hidden" />
-
+            </div>
           </div>
         </section>
 
@@ -426,6 +475,10 @@ export default function App() {
         >
           {/* Subtle floral background highlight */}
           <div className="absolute inset-0 islamic-pattern opacity-[0.06]" />
+
+          {/* Elegant Hanging Oriental Lanterns */}
+          <SwayingLantern top="-40px" left="10%" size={50} delay={0.2} />
+          <SwayingLantern top="-40px" right="10%" size={50} delay={0.9} />
 
           <div className="max-w-5xl mx-auto space-y-12 relative z-10">
             <motion.div 

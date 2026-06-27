@@ -13,32 +13,7 @@ const PASTEL_COLORS = [
   "bg-[#FAF0E6] text-[#61452D] border-[#E6D4C3] shadow-[0_5px_15px_rgba(166,143,128,0.06)]",
 ];
 
-const INITIAL_WISHES: Wish[] = [
-  {
-    id: "seed-1",
-    name: "Aisha & Farhan",
-    message: "May Allah (SWT) bless your union, shower His endless mercy upon you, and grant you a lifetime of love, laughter, and strong faith together! Baarakallahu lakuma.",
-    color: PASTEL_COLORS[0],
-    rotation: -2,
-    timestamp: Date.now() - 3600000 * 5,
-  },
-  {
-    id: "seed-2",
-    name: "Uncle Yaseen",
-    message: "Wishing Mohammed Saleem and Dhilshana Suman a wonderful journey ahead. May you be the coolness of each other's eyes. Sending all our love and du'as from Kerala!",
-    color: PASTEL_COLORS[1],
-    rotation: 1.5,
-    timestamp: Date.now() - 3600000 * 2,
-  },
-  {
-    id: "seed-3",
-    name: "Zahra Karim",
-    message: "So incredibly thrilled for you both! Can't wait to celebrate at the Emerald Palace in July. Truly a match made in heaven. Mubarak!",
-    color: PASTEL_COLORS[2],
-    rotation: -1,
-    timestamp: Date.now() - 1800000,
-  },
-];
+const INITIAL_WISHES: Wish[] = [];
 
 export default function WishesSection() {
   const [wishes, setWishes] = useState<Wish[]>([]);

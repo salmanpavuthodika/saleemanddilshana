@@ -44,10 +44,11 @@ export default function ScratchCard({ label, value, hint = "Scratch" }: ScratchC
       // Add a very subtle, clean border matching the overall card border style
       context.strokeStyle = "rgba(126, 94, 78, 0.2)";
       context.lineWidth = 1.5;
-      context.strokeRect(6, 6, w - 12, h - 12);
+      context.strokeRect(4, 4, w - 8, h - 8);
 
       // Write a beautiful, clean scratch instruction text in a minimalist style
-      context.font = "bold 10px 'Cinzel', 'Playfair Display', serif";
+      const fontSize = w < 110 ? "8px" : w < 150 ? "9px" : "10px";
+      context.font = `bold ${fontSize} 'Cinzel', 'Playfair Display', serif`;
       context.fillStyle = "#7E5E4E";
       context.textAlign = "center";
       context.textBaseline = "middle";
@@ -167,21 +168,21 @@ export default function ScratchCard({ label, value, hint = "Scratch" }: ScratchC
     <div
       ref={containerRef}
       id={`scratch-card-${label.toLowerCase()}`}
-      className="relative w-full h-40 rounded-xl bg-gradient-to-br from-[#FAF8F5] to-[#F5EFE6] border border-[#DCD0C0] shadow-[0_10px_25px_rgba(163,117,109,0.06)] overflow-hidden flex flex-col items-center justify-center p-4 group select-none"
+      className="relative w-full h-28 sm:h-40 rounded-xl bg-gradient-to-br from-[#FAF8F5] to-[#F5EFE6] border border-[#DCD0C0] shadow-[0_10px_25px_rgba(163,117,109,0.06)] overflow-hidden flex flex-col items-center justify-center p-2.5 sm:p-4 group select-none"
     >
       {/* Background card with the secret revealed date details */}
-      <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-4 z-0">
+      <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-2 sm:p-4 z-0">
         {/* Subtle patterned background for revealed details */}
         <div className="absolute inset-0 bg-[#C2A289]/5 opacity-[0.15] islamic-pattern" />
         
         {/* Date Label */}
-        <span className="font-sans text-[10px] font-bold tracking-[0.2em] text-[#A68F80] uppercase">
+        <span className="font-sans text-[8px] sm:text-[10px] font-bold tracking-[0.1em] sm:tracking-[0.2em] text-[#A68F80] uppercase text-center block">
           {label}
         </span>
         
         {/* Date Revealed Value */}
         <motion.span
-          className="font-cinzel font-bold text-4xl md:text-5xl text-[#7E5E4E] mt-2 select-text"
+          className="font-cinzel font-bold text-xl sm:text-3xl md:text-5xl text-[#7E5E4E] mt-1 sm:mt-2 select-text text-center block"
           initial={{ scale: 0.8 }}
           animate={isRevealed ? { scale: 1, textShadow: "0 0 10px rgba(166,143,128,0.15)" } : { scale: 0.8 }}
           transition={{ duration: 0.4 }}
