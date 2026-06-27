@@ -3,15 +3,21 @@ import { motion, AnimatePresence } from "motion/react";
 
 interface EnvelopeEntranceProps {
   onOpen: () => void;
+  onOpenStart?: () => void;
 }
 
-export default function EnvelopeEntrance({ onOpen }: EnvelopeEntranceProps) {
+export default function EnvelopeEntrance({ onOpen, onOpenStart }: EnvelopeEntranceProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
 
   const handleOpen = () => {
     if (isOpen) return;
     setIsOpen(true);
+    
+    // Trigger music or immediate actions synchronously within the user interaction click stack
+    if (onOpenStart) {
+      onOpenStart();
+    }
     
     // Complete the reveal when the splitting panels finish sliding out
     setTimeout(() => {

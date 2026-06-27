@@ -21,6 +21,29 @@
   --color-emerald-800: #063e26;
   --color-emerald-700: #084c30;
   --color-emerald-600: #0d6340;
+
+  --animate-spin-slow: spin 8s linear infinite;
+  --animate-eq-bar-1: eq-bar-1 1.2s ease-in-out infinite alternate;
+  --animate-eq-bar-2: eq-bar-2 1.2s ease-in-out infinite alternate;
+  --animate-eq-bar-3: eq-bar-3 1.2s ease-in-out infinite alternate;
+  --animate-eq-bar-4: eq-bar-4 1.2s ease-in-out infinite alternate;
+
+  @keyframes eq-bar-1 {
+    0% { height: 4px; }
+    100% { height: 16px; }
+  }
+  @keyframes eq-bar-2 {
+    0% { height: 8px; }
+    100% { height: 20px; }
+  }
+  @keyframes eq-bar-3 {
+    0% { height: 3px; }
+    100% { height: 14px; }
+  }
+  @keyframes eq-bar-4 {
+    0% { height: 6px; }
+    100% { height: 18px; }
+  }
 }
 
 /* Custom Scrollbar */

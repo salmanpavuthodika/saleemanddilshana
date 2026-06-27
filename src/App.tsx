@@ -14,11 +14,80 @@ import EnvelopeEntrance from "./components/EnvelopeEntrance";
 import ScratchCard from "./components/ScratchCard";
 import WishesSection from "./components/WishesSection";
 import GallerySection from "./components/GallerySection";
+import MusicPlayer from "./components/MusicPlayer";
 import { StageDecor, PetalRain, ProphetDuaCard, SwayingLantern } from "./components/IslamicLoveDecor";
 
 export default function App() {
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isMuted, setIsMuted] = useState(false);
+
+  // Audio configuration & fallback direct URLs
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentCandidateIndexRef = useRef(0);
+  const isEnvelopeOpenedRef = useRef(false);
+
+  const AUDIO_CANDIDATES = [
+    "/bg-music.mp3",
+    "https://archive.org/download/BeautifulNasheed/06%20-%20Mawlaya%20Salli.mp3",
+    "https://archive.org/download/no-music-nasheeds/04%20-%20Hasbi%20Rabbi.mp3",
+    "https://archive.org/download/no-music-nasheeds/02%20-%20Ya%20Taybah.mp3"
+  ];
+
+  useEffect(() => {
+    isEnvelopeOpenedRef.current = isEnvelopeOpened;
+  }, [isEnvelopeOpened]);
+
+  // Pre-instantiate the Audio element safely
+  useEffect(() => {
+    const audio = new Audio(AUDIO_CANDIDATES[0]);
+    audio.loop = true;
+    audio.volume = 0.45;
+    audio.muted = isMuted;
+
+    const handleError = () => {
+      // Only switch candidate if the envelope has been opened
+      if (!isEnvelopeOpenedRef.current) {
+        return;
+      }
+      console.warn("Audio load error on candidate index " + currentCandidateIndexRef.current + ". Attempting fallback...");
+      if (currentCandidateIndexRef.current < AUDIO_CANDIDATES.length - 1) {
+        currentCandidateIndexRef.current += 1;
+        audio.src = AUDIO_CANDIDATES[currentCandidateIndexRef.current];
+        audio.load();
+        audio.play().catch(e => console.log("Playback failed for fallback candidate:", e));
+      }
+    };
+
+    audio.addEventListener("error", handleError);
+    audioRef.current = audio;
+
+    return () => {
+      audio.removeEventListener("error", handleError);
+      audio.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  // Synchronize muted state whenever user toggles
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
+
+  // Synchronously play audio within user gesture click stack for perfect browser compatibility
+  const handlePlayMusicOnReveal = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((err) => {
+        console.warn("Autoplay or play call blocked by browser:", err);
+      });
+    }
+  };
+
+  const toggleMute = () => {
+    setIsMuted(prev => !prev);
+  };
 
   // References for parallax scrolling effects
   const heroRef = useRef<HTMLDivElement>(null);
@@ -83,13 +152,23 @@ export default function App() {
     <div id="microsite-root" className="min-h-screen paper-texture text-[#4A3B32] font-sans relative overflow-x-hidden antialiased">
       
       {/* 1. Fullscreen Wax-Sealed Envelope Entrance Overlay */}
-      <EnvelopeEntrance onOpen={() => setIsEnvelopeOpened(true)} />
+      <EnvelopeEntrance 
+        onOpen={() => setIsEnvelopeOpened(true)} 
+        onOpenStart={handlePlayMusicOnReveal} 
+      />
 
       {/* Main Content (Visible under the envelope but scroll-blocked/non-interactive until opened) */}
       <div 
         id="main-invitation-site" 
         className={`transition-all duration-1000 ${isEnvelopeOpened ? "opacity-100 blur-0 pointer-events-auto" : "opacity-0 blur-md pointer-events-none h-screen overflow-hidden"}`}
       >
+        {/* Music background play controller */}
+        <MusicPlayer 
+          isMuted={isMuted} 
+          toggleMute={toggleMute} 
+          isEnvelopeOpened={isEnvelopeOpened} 
+        />
+
         {/* Falling Petals and Gold Hearts Ambiance */}
         {isEnvelopeOpened && <PetalRain />}
         
@@ -507,7 +586,7 @@ export default function App() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 0.8, delay: 0.15 }}
-                className="lg:col-span-5 flex flex-col justify-between gap-6"
+                className="lg:col-span-5 flex flex-col gap-6"
               >
                 
                 {/* Card 1: Venue Name & Address */}
@@ -528,35 +607,20 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Card 2: Date Card */}
-                <div id="date-info-card" className="bg-[#FCFAF6] border border-[#DCD0C0] rounded-2xl p-6 shadow-[0_10px_25px_rgba(163,117,109,0.04)] flex gap-4">
+                {/* Card 2: Date & Time Card */}
+                <div id="date-info-card" className="bg-[#FCFAF6] border border-[#DCD0C0] rounded-2xl p-6 shadow-[0_10px_25px_rgba(163,117,109,0.04)] flex gap-4 flex-grow">
                   <div className="w-10 h-10 rounded-full bg-[#C2A289]/10 flex items-center justify-center text-[#7E5E4E] shrink-0">
                     <Calendar className="w-4.5 h-4.5" />
                   </div>
                   <div className="space-y-1.5">
                     <h4 className="font-cinzel text-[10px] font-bold tracking-wider text-[#A68F80] uppercase">
-                      Date of Ceremony
+                      Date & Time of Ceremony
                     </h4>
                     <p className="font-serif font-bold text-base text-[#4A3B32]">
-                      27 July 2026
+                      27 July 2026 • 12:00 PM
                     </p>
                     <p className="font-sans text-xs text-[#8C7A6B] leading-relaxed">
-                      Monday, 27th July 2026 • Insha'Allah. Please join us for the grand feast.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Card 3: Invitation Info */}
-                <div id="additional-info-card" className="bg-[#FCFAF6] border border-[#DCD0C0] rounded-2xl p-6 shadow-[0_10px_25px_rgba(163,117,109,0.04)] flex gap-4 flex-grow justify-start">
-                  <div className="w-10 h-10 rounded-full bg-[#C2A289]/10 flex items-center justify-center text-[#7E5E4E] shrink-0">
-                    <Info className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <h4 className="font-cinzel text-[10px] font-bold tracking-wider text-[#A68F80] uppercase">
-                      Ceremony Note
-                    </h4>
-                    <p className="font-sans text-xs text-[#8C7A6B] leading-relaxed">
-                      Your gracious presence and sincere prayers (du'as) are the most precious gifts we could ever ask for. We look forward to celebrating this beautiful day with you.
+                      Monday, 27th July 2026 at 12:00 PM • Insha'Allah. Please join us for the grand feast.
                     </p>
                   </div>
                 </div>
