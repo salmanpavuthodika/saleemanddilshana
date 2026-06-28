@@ -252,7 +252,7 @@ export function StageDecor() {
     <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
       {/* 4a. Left Premium Fabric Curtain Drape (SVG curve) */}
       <svg
-        className="absolute left-0 top-0 h-[80vh] md:h-screen w-36 sm:w-64 md:w-96 text-[#FAF5EC] fill-current drop-shadow-[5px_0_15px_rgba(126,94,78,0.06)]"
+        className="absolute left-0 top-0 h-full w-36 sm:w-64 md:w-96 text-[#FAF5EC] fill-current drop-shadow-[5px_0_15px_rgba(126,94,78,0.06)]"
         viewBox="0 0 300 800"
         preserveAspectRatio="none"
       >
@@ -285,7 +285,7 @@ export function StageDecor() {
 
       {/* 4b. Right Premium Fabric Curtain Drape (SVG curve) */}
       <svg
-        className="absolute right-0 top-0 h-[80vh] md:h-screen w-36 sm:w-64 md:w-96 text-[#FAF5EC] fill-current drop-shadow-[-5px_0_15px_rgba(126,94,78,0.06)]"
+        className="absolute right-0 top-0 h-full w-36 sm:w-64 md:w-96 text-[#FAF5EC] fill-current drop-shadow-[-5px_0_15px_rgba(126,94,78,0.06)]"
         viewBox="0 0 300 800"
         preserveAspectRatio="none"
       >

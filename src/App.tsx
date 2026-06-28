@@ -227,6 +227,9 @@ export default function App() {
           {/* Wedding Stage Backdrop Decoration */}
           <StageDecor />
 
+          {/* Seamless bottom fade overlay to blend curtains and background perfectly */}
+          <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-[#FAF5ED] via-[#FAF5ED]/80 to-transparent pointer-events-none z-[1]" />
+
           {/* Golden Arch Accent Line */}
           <motion.div 
             className="w-24 h-24 mb-6 border-t border-l border-r border-[#C2A289]/30 rounded-t-full flex items-center justify-center relative opacity-80"
